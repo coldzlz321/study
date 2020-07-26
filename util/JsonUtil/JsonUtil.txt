@@ -1,0 +1,106 @@
+package com.platform.utils;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializeConfig;
+import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.alibaba.fastjson.serializer.SimpleDateFormatSerializer;
+import com.alibaba.fastjson.serializer.ValueFilter;
+
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.List;
+
+public final class JsonUtil{
+	private JsonUtil(){
+
+	}
+
+	private static ValueFilter filter = new ValueFilter(){
+		@Override
+		public Object process(Object obj,String s,Object v){
+			if(v == null){
+				return "";
+			}
+			return v;
+		}
+	};
+
+	private static SerializerFeature[] feature ={
+		SerializerFeature.DisableCircularReferenceDetect,
+		SerializerFeature.WriteMapNullValue
+	};
+
+	private static SerializeConfig mapping = new SerializeConfig();
+
+	static {
+		mapping.put(Date.class,new SimpleDateFormatSerializer("yyyy-MM-dd HH:mm:ss'));
+		mapping.put(Timestamp.class,new SimpleDateFormatSerializer("yyyy-MM-dd HH:mm:ss"));
+	}
+
+	public static String getJsonByObj(Object bean){
+		return getJsonByObj(bean,mapping);
+	}
+
+	public static String getJsonByObj(Object bean,String dateType){
+		SerializeConfig zdymapping = new SerializeConfig();
+		zdymapping.put(Date.class,new SimpleDateFormatSerializer(dateType));
+		return getJsonByObj(bean,zdymapping);
+	}
+
+	public static String getJsonDefaultByObj(Object bean){
+		return JSON.toJSONString(bean);
+	}
+
+	public static <T> List<T> getListBean(String json,Class<T> clazz){
+		return JSON.parseArray(json,clazz);
+	}
+
+	@SuppressWarnings({"rawTypes","unchecked"})
+	public static List getList(String json,Class clazz){
+		return getListBean(json,clazz);
+	}
+
+	public static <T> getObject(String json,Class<T> clazz){
+		return JSON.parseObject(json,clazz);
+	}
+
+	private static String getJsonByObj(Object bean,SerializeConfig mappingx){
+		String json = JSON.toJSONString(bean,mappingx,filter,feature);
+		json = stringToJson(json);
+		return json;
+	}
+
+	public static String stringToJson(String s){
+		StringBuffer sb = new StringBuffer();
+		for(nt i = 0; i < s.length(); i++){
+			char c = s.charAt(i);
+			switch(c){
+				case "\\":
+					sb.append("\\\\");
+					break;
+				case "/":
+					sb.append("\\/");
+					break;
+				case "\b":
+					sb.append("\\b");
+					break;
+				case "\f":
+					sb.append("\\f");
+					break;
+				case "\n":
+					sb.append("\\n");
+					break;
+				case "\r":
+					sb.append("\\r");
+					break;
+				case "\t":
+					sb.append("\\t");
+					break;
+				default:
+					sb.append(c);
+					
+			}
+		}
+		return sb.toString();
+	}
+}
