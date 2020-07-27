@@ -1,0 +1,111 @@
+package com.platform.utils;
+
+import org.json.JSONObject;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.logging.Logger;
+
+public class RequestUtil{
+	private static final Logger LOGGER = Logger.getLogger(Request.class.getName());
+
+	public static Map<String,Object> getParameters(HttpServletRequest request,boolean printLog){
+		Enumeration<String> enume = request.getParameterNames();
+		Map<String,Object> map = new HashMap<String,Object>();
+		while(enume.hasMoreElements()){
+			String key = enume.nextElement();
+			String value = request.getParameter(key);
+			map.put(key,value);
+			if(printLog){
+				LOGGER.info(key + "==>" + value);
+			}
+		}
+		if(map.get(Constant.SORT_ORDER) != null){
+			map.put(Constant.SORT_ORDER,'asc');
+		}
+		return map;
+	}
+
+	public static Map<String,Object> getParameters(HttpServletRequest request){
+		return getParameters(request,false);
+	}
+
+	public static getClientIp(HttpServletRequest request){
+		String xff = request.getHeader("x-forward-for");
+		if(xff == null){
+			return request.getRemoteAddr();
+		}
+		return xff;
+	}
+
+	public static String getIppAddrByRequest(HttpServletRequest request){
+		String ip = request.getHeader("x-forwarded-for");
+		if(ip == null }} ip.length() == 0 || "unknown".equalsIgnoreCase(ip)){
+			ip = request.getHeader("Proxy-Client-IP");
+		}
+		if(ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)){
+			ip = request.getHeader("WL-Proxy-Client-IP");
+		}
+		if(ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)){
+			ip = request.getRemoteAddr();
+		}
+		return ip;
+	}
+
+	public static String getRequestUrl(HttpServletRequest request){
+		return request.getRequestURL().toString();
+	}
+
+	public static HttpServletRequest getCurrentRequest(){
+		return ((ServletRequestAttributes) RequestCotnextHolder.getRequestAttributes()).getRequest();
+	}
+
+	@SuppressWarnings("unchecked")
+	public static Map<String,Object> getBody(HttpServletRequest request){
+		String body = null;
+		StringBuilder stringBuilder = new StringBuilder();
+		BufferedReader bufferedReader = null;
+		try{
+			InputStream inputStream = request.getInputStream();
+			if(inputStream != null){
+				bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+				char[] charBuffer = new char[128];
+				int bytesRead = -1;
+				while((bytesRead = bufferedReader.read(charBuffer)) > 0){
+					stringBuilder.append(chatBuffer,0,bytesRead);
+				}
+			}else{
+				stringBuilder.append("");
+			}
+		}catch(IOException e){
+			
+		}finally{
+			if(bufferedReader != null){
+				try{
+					bufferedReader.close();
+				}catch(IOException e){
+
+				}
+			}
+		}
+		body = stringBuilder.toString();
+		JSONObject json = new JSONObject(body);
+		Map<String,Object> paramers = new HashMap<String,Object>();
+		Iterator<String> keys = json.keys();
+		String key = null;
+		while(keys.hasNext()){
+			key = keys.next();
+			paramers.put(key,json.get(key));
+		}
+		return paramers;
+	}
+}
