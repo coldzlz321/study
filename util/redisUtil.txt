@@ -1,0 +1,266 @@
+package com.platform.util;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import com.platform.utils.ResourceUtil;
+
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.exception.JedisException;
+
+public class RedisUtils{
+	private static JedisPoolConfig config;
+
+	private static JedisPool jedisPool;
+
+	private static String password = null;
+
+	static {
+		Properties proerties = new Properties();
+
+		InputStream in = RedisUtils.class.getClassLoader().getResourceAsStream("/j2cache.properties");
+
+		try{
+			properties.load(in);
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+
+		String adds = properties.getProperty("redis.adds");
+		int port = Integer.parseInt(properties.getProperty("redis.port"));
+		password = properties.getProperty("redis.password");
+
+		config = new JedisPoolConfig();
+		config.setMaxIdle(100);
+		config.setMaxIdle(10);
+		jedisPool = new JedisPool(config,adds,port);
+	}
+
+	public statci Jedis getJedis(){
+		Jedis jedis = jedisPool.getResource();
+		jedis.auth(password)l
+		return jedis;
+	}
+
+	public static void close(Jedis jedis){
+		if(jedis != null){
+			jedis.close();
+		}
+	}
+
+	public static String get(String key){
+		Jedis jedis = null;
+		try{
+			jedis = getJedis();
+			return jedis.get(key);
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new JedisException(e.getMessage(),e);
+		}finally{
+			close(jedis);
+		}
+	}
+
+	public static Boolean exists(String key){
+		Jedis jedis = null;
+		try{
+			jedis = getJedis();
+			return jedis.exists(key);
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new JedisException(e.getMessage(),e);
+		}finally{
+			close(jedis);
+		}
+	}
+
+	public static void set(String key,String value){
+		Jedis jedis = null;	
+		try{
+			jedis = getJedis();
+			jedis.set(key,value);
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new JedisException(e.getMessage(),e);
+		}finally{
+			close(jedis);
+		}
+	}
+
+	public static void set(String key,String value,long seconds){
+		Jedis jedis = null;
+		try{
+			jedis = getJedis();
+
+			jedis.set(key,value,"NX","EX",seonds);
+		}catch(Exception e){
+			e.printStackTrace();
+			thorw new JedisException(e.getMessage(),e);
+		}finally{
+			close(jedis)
+		}
+	}
+	
+	public static Long del(String key){
+		Jedis jedis = null;
+		try{
+			jedis = getJedis();
+			return jedis.del(key);
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new JedisException(e.getMessage(),e);
+		}finally{
+			close(jedis);
+		}
+	}
+
+	public static Long incr(String key){
+		Jedis jedis = null;
+		try{
+			jedis = getJedis();
+			return jedis.incr(key);
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new JedisException(e.getMessage(),e);
+		}finally{
+			close(jedis);
+		}
+	}
+
+	public static void hset(String key,String field,String value){
+		Jedis jedis = null;
+		try{
+			jedis = getJedis();
+			jedis.hset(key,field,value);
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new JedisException(e.getMessage(),e);
+		}finally{
+			close(jedis)
+		}
+	}
+
+	public static String hget(String key,String filed){
+		Jedis jedis = null;
+		try{
+			jedis = getJedis();
+			return jedis.hget(key,field);
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			close(jedis);
+		}
+		return null;
+
+	}
+
+	public static Map<String,String> hgetAll(String key){
+		Jedis jedis = null;
+		try{
+			jedis = getJedis();
+			return jedis.hgetAll(key)
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new JedisException(e.getMessage(),e);
+		}finally{
+			close(jedis);
+		}
+	}
+
+	public static String blpop(int timeout,String key){
+		Jedis jedis = null;
+		try{
+			jedis = getJedis();
+			List<String> list = jedis.blpop(timeout,key);
+			return list.get(1);
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new JedisException(e.getMessage(),e);
+		}finally{
+			close(jedis);
+		}
+	}
+	public static String blpop(String key){
+		Jedis jedis = null;
+		try{
+			jedis = getJedis();
+			List<String> list = jedis.blpop(0,key);
+			return list.get(1);
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new JedisException(e.getMessage(),e);
+		}finally{
+			close(jedis);
+		}
+	}
+
+	public static void lpush(String key,String ...value){
+		jedis jedis = null;
+		try{
+			jedis = getJedis();
+			jedis.lpush(key,value);
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new JedisException(e.getMessage(),e);
+		}
+	}
+
+	public static String brpop(int timeout,String key){
+		Jedis jedis = null;
+		try{
+			jedis = getJedis();
+			List<String> list = jedis.brpop(timeout,key);
+			return list.get(1);
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new JedisException(e.getMessage(),e);
+		}finally{
+			close(jedis);
+		}
+	}	
+
+	public static String brpop(String key){
+		Jedis jedis = null;
+		try{
+			jedis = getJedis();
+			List<String> list = jedis.brpop(0,key);
+			return list.get(1);
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new JedisException(e.getMessage(),e);
+		}finally{
+			close(jedis);
+		}
+	}
+
+	public static void rpush(String key,String... value){
+		jedis jedis = null;
+		try{
+			jedis = getJedis();
+			jedis.rpush(key,value);
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new JedisException(e.getMessage(),e);
+		}
+	}
+
+	public static long ttl(String key){
+		Jedis jedis = null;
+		try{
+			jedis = getJedis();
+			return jedis.ttl(key);
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new JedisException(e.getMessage(),e);
+		}finally{
+			close(jedis)
+		}
+	}
+	
+	
+}
